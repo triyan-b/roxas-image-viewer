@@ -1,9 +1,8 @@
-from textwrap import dedent
 from tkinter import *
 from tkinter import  ttk
 from Application import Application
 from DendroImageManager import DendroImageManager
-import time
+from textwrap import dedent
 import threading
 import traceback
 
@@ -17,7 +16,7 @@ class DendroImageMetadataLoaderFrame(Frame):
         # State
         self.sample_dir = self.controller.state.get("sample_dir")
         self.subsample_dir = self.controller.state.get("subsample_dir")
-        self.accepted_image_formats = self.controller.state.get("acceptedImageFormats")
+        self.accepted_image_formats = self.controller.state.get("accepted_image_formats")
         
         # General
         self.controller.title("Loading")
@@ -62,8 +61,6 @@ class DendroImageMetadataLoaderFrame(Frame):
                 )
                 return 
             self.controller.state['samples'] = samples
-            # print(metadata_by_sample)
-            # time.sleep(3)
         except Exception as e:
             self.loading_status = 'FAILED'
             self.loading_status_message = traceback.format_exc(limit=2)

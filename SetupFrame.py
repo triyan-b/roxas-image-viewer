@@ -2,6 +2,8 @@ from tkinter import *
 from tkinter import filedialog
 from Application import Application
 import webbrowser
+from urllib.parse import quote
+import uuid
 
 class SetupFrame(Frame):
     def __init__(self, controller: Application):
@@ -12,15 +14,19 @@ class SetupFrame(Frame):
         # State
         self.sample_preview_dir = self.controller.state.get("sample_dir")
         self.subsample_dir = self.controller.state.get("subsample_dir")
-        # self.sample_preview_dir = "N:/dendro/Dendrosciences_All/PatrickFonti_CALDERA_2019_PF/Box1-30/Box01/0_JPG"
-        # self.subsample_dir = "N:/dendro/Dendrosciences_All/PatrickFonti_CALDERA_2019_PF/Box1-30/Box01/ROXAS/4_Roxas_final"
-        self.sample_preview_dir = "C:/Users/bhardwaj/Desktop/Triyan/git/roxas-image-viewer/images"
-        self.subsample_dir = "C:/Users/bhardwaj/Desktop/Triyan/git/roxas-image-viewer/images"
+        if not self.controller.state.get("prod"):
+            self.sample_preview_dir = "N:/dendro/Dendrosciences_All/PatrickFonti_CALDERA_2019_PF/Box1-30/Box01/0_JPG"
+            self.subsample_dir = "N:/dendro/Dendrosciences_All/PatrickFonti_CALDERA_2019_PF/Box1-30/Box01/ROXAS/4_Roxas_final"
+            # self.sample_preview_dir = "C:/Users/bhardwaj/Desktop/Triyan/git/roxas-image-viewer/images"
+            # self.subsample_dir = "C:/Users/bhardwaj/Desktop/Triyan/git/roxas-image-viewer/images"
+            pass
 
         # General
         self.controller.title("Setup")
         self.controller.grid()
+        self.controller.protocol("WM_DELETE_WINDOW", self.controller.destroy)
         self.focus_set()
+
         
         # Geometry
         self.w = int(0.4 * self.controller.winfo_screenwidth())
@@ -56,7 +62,7 @@ class SetupFrame(Frame):
         self.bottom_frame.grid_columnconfigure(0, weight = 1)
         self.bottom_frame.grid_columnconfigure(1, weight = 7)
 
-        self.ui_report_bug_button = Button(self.bottom_frame, text="Report a bug 🐞", command=lambda: webbrowser.open("mailto:?to=triyanb@gmail.com&subject=Bug%20in%20Roxas%20Image%20Viewer", new=2))
+        self.ui_report_bug_button = Button(self.bottom_frame, text="Report a bug 🐞", command=self.on_click_report_bug)
         self.ui_report_bug_button.grid(row=0, column=0, sticky='sew', padx=2, pady=2)
         self.ui_continue_button = Button(self.bottom_frame, text="Continue", command=self.on_click_continue, state=(NORMAL if self.is_setup_complete() else DISABLED))
         self.ui_continue_button.grid(row=0, column=1, sticky='sew', padx=2, pady=2)
@@ -76,7 +82,6 @@ class SetupFrame(Frame):
             "sample_dir": self.sample_preview_dir,
             "subsample_dir": self.subsample_dir
         })
-        # print(self.controller.state)
         self.controller.show_frame(DendroImageMetadataLoaderFrame)
     
     def ask_directory(self) -> str:
@@ -89,3 +94,9 @@ class SetupFrame(Frame):
 
     def is_setup_complete(self) -> bool:
         return self.sample_preview_dir is not None and self.subsample_dir is not None
+
+    def on_click_report_bug(self):
+        to = "triyanb@gmail.com"
+        subject = f"Bug in Roxas Image Viewer (#{uuid.uuid4().hex[:6].upper()})"
+        url = f"mailto:?to={to}&subject={quote(subject)}"
+        webbrowser.open(url, new=2)

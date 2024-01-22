@@ -1,4 +1,4 @@
 {
-    "acceptedImageFormats": ["jpg", "jpeg", "png"],
-    "csvDelimiter": ";"
+    "ACCEPTED_IMAGE_FORMATS": ["jpg", "jpeg", "png"],
+    "CSV_DELIMITER": ";"
 }

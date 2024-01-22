@@ -38,32 +38,58 @@ class EvaluationsTableSubframe(Frame):
         self.ui_back_to_samples_button.grid(row = 0, column = 0, sticky='nw', pady=10)
 
         ## Evaluations table
-        headers, rows = self.get_evaluations_table()
         self.eval_table_frame = Frame(self)
         self.eval_table_frame.grid(row=1, column=0, columnspan=3, sticky='n')
 
-        ### Table header
-        self.evals_table_headers_text = Label(self.eval_table_frame, text=headers if headers else 'No evaluations in this session', font=("MS Gothic", 10) if headers else ("Segoe UI", 9), borderwidth=(1 if headers else 0), relief="solid")
+        self.evals_table_headers_text = Label(self.eval_table_frame, relief="solid")
         self.evals_table_headers_text.grid(row=0, column=0, sticky='sw')
+        self.evals_table_rows_text = ScrolledText(self.eval_table_frame, font=("MS Gothic", 10), borderwidth=1, relief="solid", bg='SystemButtonFace')
+        
+        
+        ### Compact/Expanded mode toggle
+        self.compact_table_view = True
+        self.table_view_toggle = Checkbutton(self.eval_table_frame, text="Compact view", command=self.on_toggle_table_view)
+        if self.compact_table_view:
+            self.table_view_toggle.select()
+        
+        self.show_evaluations_table()
+    
+    def on_toggle_table_view(self):
+        self.compact_table_view = not self.compact_table_view
+        self.show_evaluations_table()
 
-        ### Table rows
+    def show_evaluations_table(self):
+        headers, rows = self.get_evaluations_table()
+        if headers:
+            self.evals_table_headers_text.configure(text=headers, font=("MS Gothic", 10), borderwidth=1)
+        else:
+            self.evals_table_headers_text.configure(text='No evaluations in this session', font=("Segoe UI", 9), borderwidth=0)
+        self.evals_table_headers_text.grid(row=0, column=0, sticky='sw')
         if rows:
-            self.evals_table_rows_text = ScrolledText(self.eval_table_frame, width=len(headers), height=min(rows.count("\n") + 1, 20), font=("MS Gothic", 10), borderwidth=(1 if rows else 0), relief="solid", bg='SystemButtonFace')
+            self.evals_table_rows_text.configure(width=len(headers), height=min(rows.count("\n") + 1, 50))
+            self.evals_table_rows_text.delete('1.0', END)
             self.evals_table_rows_text.insert(END, rows)
-            self.evals_table_rows_text.configure(state=DISABLED)
             self.evals_table_rows_text.grid(row=1, column=0, sticky='nw')
+            self.table_view_toggle.grid(row=2, column=0)
+        else:
+            self.evals_table_rows_text.grid_forget()
+            self.table_view_toggle.grid_forget()
         
     
     def get_evaluations_table(self):
         df = pd.DataFrame.from_dict(self.evals, orient='index').reset_index()
         if len(df) > 0:
             df = df.rename(columns={
-                df.columns[0]: "Site",
-                df.columns[1]: "Tree",
-                df.columns[2]: "Sample",
-                df.columns[3]: "Subsample",
-                df.columns[4]: "Year"
+                df.columns[0]: "site",
+                df.columns[1]: "tree",
+                df.columns[2]: "sample",
+                df.columns[3]: "subsample",
+                df.columns[4]: "year"
             })
-            return tuple(str(df).split("\n", 1))
+            if self.compact_table_view:
+                df = df.apply(lambda row: pd.Series(pd.concat([row.iloc[:5], pd.Series([row[row == value].index.tolist() for value in ["EW", "LW", "All"]])])), axis=1)
+                df = df.rename(columns={df.columns[i]: name for i, name in enumerate(["EW", "LW", "All"], start = 5)}) 
+            
+            return tuple(df.to_string(index=False).split("\n", 1))
         else:
             return '', ''

@@ -3,7 +3,6 @@ from tkinter import messagebox
 from Application import Application
 from RoxasImageViewerFrame import RoxasImageViewerFrame
 import pandas as pd
-import os
 import re
 
 class SubsampleEvaluationSubframe(Frame):
@@ -24,16 +23,9 @@ class SubsampleEvaluationSubframe(Frame):
         self.curr_sample = self.parent.samples[self.curr_sample_i]
         self.curr_subsample = self.parent.state.get("curr_subsample")
 
-        self.eval_criteria_values = ["None", "EW", "LW", "Full"]
-        self.eval_criteria = {
-            "Category A": StringVar(),
-            "Category B": StringVar(),
-            "Category C": StringVar(),
-            "Category D": StringVar(),
-            "Category E": StringVar(),
-            "Category F": StringVar(),
-            "Category G": StringVar(),
-        }
+        self.eval_criteria_keys = ["X-dating", "Compression wood", "Orientation", "Artefacts", "Crack(s)", "Out of focus", "Frost ring?", "Decay", "Filled cells", "Compressed cells", "Overlapping cells", "Broken cells", "Tyloses", "Paraffin", "Others"]
+        self.eval_criteria_values = ["None", "EW", "LW", "All"]
+        self.eval_criteria = {key: StringVar() for key in self.eval_criteria_keys}
         self.eval_criteria_count = len(list(self.eval_criteria.keys()))
 
         # General
@@ -45,7 +37,8 @@ class SubsampleEvaluationSubframe(Frame):
         self.w = int(0.95 * self.controller.winfo_screenwidth())
         self.h = int(0.9 * self.controller.winfo_screenheight())
         self.img_h = int(0.8*(self.h))
-        self.default_image = self.img_loader.default_image(int(0.1*(self.w)), self.img_h, (255, 255, 255, 0))
+        self.img_max_w = int(0.33*(self.w))
+        self.default_image = self.img_loader.default_image(self.img_max_w, self.img_h, (255, 255, 255, 0))
         self.x = 5
         self.y = 5
         self.grid_columnconfigure(tuple(range(3)), weight = 1)
@@ -75,7 +68,7 @@ class SubsampleEvaluationSubframe(Frame):
         self.subsample_buttons_frame.grid_columnconfigure(tuple(range(3)), weight = 1)
         self.subsample_buttons_frame.grid_rowconfigure(tuple(range(2)), weight = 1)
         self.subsample_buttons_frame.grid(row=3, column=0, sticky="n")
-        self.ui_open_subsample_in_viewer_button = Button(self.subsample_buttons_frame, text="Open in viewer", command=lambda: os.system(f'start "Subsample" "{self.curr_subsample.get("path")}"'))
+        self.ui_open_subsample_in_viewer_button = Button(self.subsample_buttons_frame, text="Open in viewer", command=lambda: self.parent.open_image_in_default_viewer(self.curr_subsample.get("path")))
         self.ui_open_subsample_in_viewer_button.grid(row=0, column=1, sticky='ew')
 
         ## Evaluation grid
@@ -108,13 +101,35 @@ class SubsampleEvaluationSubframe(Frame):
                 rb.grid(row=i+1, column=j+1, padx=8, pady=5, sticky='ew')
 
         ## Current subsample evaluations table
+        self.subsample_evals = None
+        self.evals_table_headers_text = Label(self.eval_frame, font=("MS Gothic", 10), justify='left', borderwidth=1, relief="solid")
+        self.evals_table_rows_text = Label(self.eval_frame, font=("MS Gothic", 10), justify='left', borderwidth=1, relief="solid")
+        
+        ### Compact/Expanded mode toggle
+        self.compact_table_view = True
+        self.table_view_toggle = Checkbutton(self.eval_frame, text="Compact view", command=self.on_toggle_table_view)
+        if self.compact_table_view:
+            self.table_view_toggle.select()
+
+        self.show_evaluations_table()
+    
+    def on_toggle_table_view(self):
+        self.compact_table_view = not self.compact_table_view
+        self.show_evaluations_table()
+
+    def show_evaluations_table(self):
         self.subsample_evals = self.get_subsample_evaluations()
         headers, rows = self.get_subsample_evaluations_table()
-
-        self.evals_table_headers_text = Label(self.eval_frame, text=headers, font=("MS Gothic", 10), justify='left', borderwidth=(1 if headers else 0), relief="solid")
-        self.evals_table_headers_text.grid(row=self.eval_criteria_count + 1, column=0, columnspan=len(self.eval_criteria_values) + 1)
-        self.evals_table_rows_text = Label(self.eval_frame, text=rows, font=("MS Gothic", 10), justify='left', borderwidth=(1 if rows else 0), relief="solid")
-        self.evals_table_rows_text.grid(row=self.eval_criteria_count + 2, column=0, columnspan=len(self.eval_criteria_values) + 1)
+        if not headers:
+            self.evals_table_headers_text.grid_forget()
+            self.evals_table_rows_text.grid_forget()
+            self.table_view_toggle.grid_forget()
+        else:        
+            self.evals_table_headers_text.configure(text=headers)
+            self.evals_table_headers_text.grid(row=self.eval_criteria_count + 1, column=0, columnspan=len(self.eval_criteria_values) + 1)
+            self.evals_table_rows_text.configure(text=rows)
+            self.evals_table_rows_text.grid(row=self.eval_criteria_count + 2, column=0, columnspan=len(self.eval_criteria_values) + 1)
+            self.table_view_toggle.grid(row=self.eval_criteria_count + 3, column=0, columnspan=len(self.eval_criteria_values) + 1)
 
     def on_click_crud_evaluation(self, save=True):
         year = self.eval_year_input.get()
@@ -123,20 +138,22 @@ class SubsampleEvaluationSubframe(Frame):
             return
         pk = (*self.curr_sample, self.curr_subsample.get("subsample"), year)
         if save:
-            self.parent.state.get("evaluations")[pk] = {category: value.get() for category, value in self.eval_criteria.items()}
+            self.parent.state.get("evaluations")[pk] = {category: "" if (v := value.get()) == "None" else v for category, value in self.eval_criteria.items()}
         else:
             self.parent.state.get("evaluations").pop(pk, None)
-        self.subsample_evals = self.get_subsample_evaluations()
-        headers, rows = self.get_subsample_evaluations_table()
-        self.evals_table_headers_text.configure(text=headers, borderwidth=(1 if headers else 0))
-        self.evals_table_rows_text.configure(text=rows, borderwidth=(1 if rows else 0))
+        self.parent.state["is_unsaved"] = (True and bool(self.parent.state.get("evaluations")))
+        self.show_evaluations_table()
         self.focus_set()
+        print(self.parent.state)
 
     def get_subsample_evaluations_table(self):
         df = pd.DataFrame.from_dict(self.subsample_evals, orient='index').reset_index()
         if len(df) > 0:
-            df = df.drop(df.columns[[0, 1, 2, 3]], axis = 1).rename(columns={df.columns[4]: "Year"})
-            return tuple(str(df).split("\n", 1))
+            df = df.drop(df.columns[[0, 1, 2, 3]], axis = 1).rename(columns={df.columns[4]: "year"})
+            if self.compact_table_view:
+                df = df.apply(lambda row: pd.Series(pd.concat([row.iloc[:1], pd.Series([row[row == value].index.tolist() for value in self.eval_criteria_values[1:]])])), axis=1)
+                df = df.rename(columns={df.columns[i]: name for i, name in enumerate(self.eval_criteria_values[1:], start = 1)})  
+            return tuple(df.to_string(index=False).split("\n", 1))
         else:
             return '', ''
 
@@ -148,7 +165,7 @@ class SubsampleEvaluationSubframe(Frame):
 
     def get_subsample_image(self, subsample):
         try:
-            return self.img_loader.load_resized(subsample.get("path"), self.img_h) if subsample else self.default_image
+            return self.img_loader.load_resized(subsample.get("path"), self.img_h, self.img_max_w) if subsample else self.default_image
         except:
             return self.default_image
     
