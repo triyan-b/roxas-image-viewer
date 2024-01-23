@@ -1,5 +1,5 @@
 ---
-ACCEPTED_IMAGE_FORMATS: # List of accepted file formats
+ACCEPTED_IMAGE_FORMATS: # List of accepted image formats - https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html
   - jpg
   - jpeg
   - png

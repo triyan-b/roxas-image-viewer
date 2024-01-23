@@ -17,7 +17,7 @@ class RoxasImageViewerFrame(Frame):
             "is_unsaved": False
         }
 
-        self.img_loader = ImageLoader()
+        self.img_loader = ImageLoader(None)
         self.sample_dir = self.controller.state.get("sample_dir")
         self.subsample_dir = self.controller.state.get("subsample_dir")
         self.metadata_by_sample = self.controller.state.get("metadata_by_sample")

@@ -98,5 +98,6 @@ class SetupFrame(Frame):
     def on_click_report_bug(self):
         to = "triyanb@gmail.com"
         subject = f"Bug in Roxas Image Viewer (#{uuid.uuid4().hex[:6].upper()})"
-        url = f"mailto:?to={to}&subject={quote(subject)}"
+        body= f"Please describe the issue you are facing. If possible, attach screenshots."
+        url = f"mailto:?to={to}&subject={quote(subject)}&body={quote(body)}"
         webbrowser.open(url, new=2)

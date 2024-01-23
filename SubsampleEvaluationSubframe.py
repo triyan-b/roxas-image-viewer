@@ -40,7 +40,7 @@ class SubsampleEvaluationSubframe(Frame):
         self.h = int(0.9 * self.controller.winfo_screenheight())
         self.img_h = int(0.8*(self.h))
         self.img_max_w = int(0.33*(self.w))
-        self.default_image = self.img_loader.default_image(self.img_max_w, self.img_h, (255, 255, 255, 0))
+        self.default_image = self.img_loader.default_image(self.img_max_w, self.img_h, (255, 255, 255, 0), text="No Image")
         self.x = 5
         self.y = 5
         self.grid_columnconfigure(tuple(range(3)), weight = 1)
@@ -48,6 +48,8 @@ class SubsampleEvaluationSubframe(Frame):
         self.grid(row=0, column=0, sticky='nsew')
 
         # Events
+        self.bind("<Alt-i>", lambda e: self.parent.open_image_in_default_viewer(self.curr_subsample.get("path")))
+        self.bind("<Alt-I>", lambda e: self.parent.open_image_in_default_viewer(self.curr_subsample.get("path")))
         self.bind("<Alt-Left>", lambda e: self.parent.show_subframe(SubsampleViewerSubframe))
         self.bind("<Button-1>", lambda e: self.on_click_focus_set(e))
 
@@ -81,8 +83,8 @@ class SubsampleEvaluationSubframe(Frame):
 
         ### Top row 
         self.eval_year_label = Label(self.eval_frame, text="Year", font=("Segoe UI", 9, "bold")).grid(row=0, column=0, sticky='w')
-        self.eval_year_input = Entry(self.eval_frame, justify='center')
-        self.eval_year_input.grid(row=0, column=1, columnspan=1, sticky='ew')
+        self.eval_year_input = Entry(self.eval_frame, justify='center', width=5)
+        self.eval_year_input.grid(row=0, column=1, columnspan=1, padx=1, sticky='ew')
         self.inc_dec_frame = Frame(self.eval_frame)
         self.inc_dec_frame.grid(row=0, column=2, sticky='w')
         self.eval_dec_year_button = Button(self.inc_dec_frame, text="−", command=lambda: self.on_click_change_year(False))
@@ -110,12 +112,12 @@ class SubsampleEvaluationSubframe(Frame):
 
         ## Current subsample evaluations table
         self.subsample_evals = None
-        self.evals_table_headers_text = Label(self.eval_frame, font=("MS Gothic", 10), justify='left', borderwidth=1, relief="solid")
-        self.evals_table_rows_text = Label(self.eval_frame, font=("MS Gothic", 10), justify='left', borderwidth=1, relief="solid")
+        self.evals_table_headers_text = Label(self.eval_frame, font=("Consolas", 10), justify='left', borderwidth=1, relief="solid")
+        self.evals_table_rows_text = Label(self.eval_frame, font=("Consolas", 10), justify='left', borderwidth=1, relief="solid")
         
         ### Compact/Expanded mode toggle
         self.compact_table_view = True
-        self.table_view_toggle = Checkbutton(self.eval_frame, text="Compact view", command=self.on_toggle_table_view)
+        self.table_view_toggle = Checkbutton(self.eval_frame, text="Grouped view", command=self.on_toggle_table_view)
         if self.compact_table_view:
             self.table_view_toggle.select()
 
@@ -134,7 +136,7 @@ class SubsampleEvaluationSubframe(Frame):
             self.table_view_toggle.grid_forget()
         else:        
             self.evals_table_headers_text.configure(text=headers)
-            self.evals_table_headers_text.grid(row=self.eval_criteria_count + 2, column=0, columnspan=len(self.eval_criteria_values) + 1)
+            self.evals_table_headers_text.grid(row=self.eval_criteria_count + 2, column=0, pady=(8,0), columnspan=len(self.eval_criteria_values) + 1)
             self.evals_table_rows_text.configure(text=rows)
             self.evals_table_rows_text.grid(row=self.eval_criteria_count + 3, column=0, columnspan=len(self.eval_criteria_values) + 1)
             self.table_view_toggle.grid(row=self.eval_criteria_count + 4, column=0, columnspan=len(self.eval_criteria_values) + 1)
@@ -161,8 +163,11 @@ class SubsampleEvaluationSubframe(Frame):
             if self.compact_table_view:
                 df = df.drop("comment", axis=1)
                 df = df.apply(lambda row: pd.Series(pd.concat([row.iloc[:1], pd.Series([row[row == value].index.tolist() for value in self.eval_criteria_values[1:]])])), axis=1)
-                df = df.rename(columns={df.columns[i]: name for i, name in enumerate(self.eval_criteria_values[1:], start = 1)})  
-            return tuple(df.to_string(index=False).split("\n", 1))
+                df = df.rename(columns={df.columns[i]: name for i, name in enumerate(self.eval_criteria_values[1:], start = 1)})
+            else:
+                df.columns = [f"{col[:5]}…" if len(col) > 5 else col for col in df.columns]
+
+            return tuple(df.to_string(index=False, justify="left").split("\n", 1))
         else:
             return '', ''
 

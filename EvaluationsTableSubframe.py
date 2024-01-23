@@ -43,12 +43,12 @@ class EvaluationsTableSubframe(Frame):
 
         self.evals_table_headers_text = Label(self.eval_table_frame, relief="solid")
         self.evals_table_headers_text.grid(row=0, column=0, sticky='sw')
-        self.evals_table_rows_text = ScrolledText(self.eval_table_frame, font=("MS Gothic", 10), borderwidth=1, relief="solid", bg='SystemButtonFace')
+        self.evals_table_rows_text = ScrolledText(self.eval_table_frame, font=("Consolas", 10), borderwidth=1, relief="solid", bg='SystemButtonFace')
         
         
         ### Compact/Expanded mode toggle
         self.compact_table_view = True
-        self.table_view_toggle = Checkbutton(self.eval_table_frame, text="Compact view", command=self.on_toggle_table_view)
+        self.table_view_toggle = Checkbutton(self.eval_table_frame, text="Grouped view", command=self.on_toggle_table_view)
         if self.compact_table_view:
             self.table_view_toggle.select()
         
@@ -61,7 +61,7 @@ class EvaluationsTableSubframe(Frame):
     def show_evaluations_table(self):
         headers, rows = self.get_evaluations_table()
         if headers:
-            self.evals_table_headers_text.configure(text=headers, font=("MS Gothic", 10), borderwidth=1)
+            self.evals_table_headers_text.configure(text=headers, font=("Consolas", 10), borderwidth=1)
         else:
             self.evals_table_headers_text.configure(text='No evaluations in this session', font=("Segoe UI", 9), borderwidth=0)
         self.evals_table_headers_text.grid(row=0, column=0, sticky='sw')
@@ -89,8 +89,10 @@ class EvaluationsTableSubframe(Frame):
             if self.compact_table_view:
                 df = df.drop("comment", axis=1)
                 df = df.apply(lambda row: pd.Series(pd.concat([row.iloc[:5], pd.Series([row[row == value].index.tolist() for value in ["EW", "LW", "All"]])])), axis=1)
-                df = df.rename(columns={df.columns[i]: name for i, name in enumerate(["EW", "LW", "All"], start = 5)}) 
+                df = df.rename(columns={df.columns[i]: name for i, name in enumerate(["EW", "LW", "All"], start = 5)})
+            else:
+                df.columns = [f"{col[:5].strip()}…" if len(col) > 5 else col for col in df.columns] 
             
-            return tuple(df.to_string(index=False).split("\n", 1))
+            return tuple(df.to_string(index=False, justify="left").split("\n", 1))
         else:
             return '', ''

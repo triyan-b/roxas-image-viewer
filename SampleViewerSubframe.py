@@ -37,7 +37,7 @@ class SampleViewerSubframe(Frame):
         self.h = int(0.9 * self.controller.winfo_screenheight())
         self.img_w = int(0.33*(self.w))
         self.img_max_h = int(0.7*(self.h))
-        self.default_image = self.img_loader.default_image(self.img_w, self.img_w/2, (255, 255, 255, 0))
+        self.default_image = self.img_loader.default_image(self.img_w, self.img_w/2, (255, 255, 255, 0), text="No Image")
         self.x = 5
         self.y = 5
         self.grid_columnconfigure(tuple(range(3)), weight = 1)
@@ -46,6 +46,12 @@ class SampleViewerSubframe(Frame):
 
         # Events
         self.bind("<Alt-Left>", lambda e: self.on_click_go_to_setup())
+        self.bind("<Alt-i>", lambda e: self.parent.open_image_in_default_viewer(p.get("path")) if (p := self.get_preview_sample(self.curr_sample)) else None)
+        self.bind("<Alt-I>", lambda e: self.parent.open_image_in_default_viewer(p.get("path")) if (p := self.get_preview_sample(self.curr_sample)) else None)
+        self.bind("<Alt-v>", lambda e: self.on_click_view_evaluations())
+        self.bind("<Alt-V>", lambda e: self.on_click_view_evaluations())
+        self.bind("<Alt-e>", lambda e: self.on_click_export_evaluations())
+        self.bind("<Alt-E>", lambda e: self.on_click_export_evaluations())
         self.bind("<Left>", lambda e: self.on_click_change_curr_sample(False) if (self.ui_prev_sample_button['state'] == NORMAL) else None)
         self.bind("<Right>", lambda e: self.on_click_change_curr_sample(True) if (self.ui_next_sample_button['state'] == NORMAL) else None)
         self.bind("<Return>", lambda e: self.on_click_view_subsamples() if (self.ui_view_subsamples_button['state'] == NORMAL) else None)

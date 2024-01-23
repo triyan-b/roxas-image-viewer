@@ -1,10 +1,19 @@
-from PIL import ImageTk, Image
+from PIL import ImageTk, Image, ImageDraw, ImageFont   
 from functools import lru_cache
 
 class ImageLoader():
 
-    def default_image(self, w, h, color=(0, 0, 0, 255)):
-        return ImageTk.PhotoImage(Image.new(mode="RGBA", size=(int(w), int(h)), color=color))
+    def __init__(self, max_pixels) -> None:
+        Image.MAX_IMAGE_PIXELS = max_pixels
+
+    def default_image(self, w, h, color=(0, 0, 0, 255), text=None):
+        img = Image.new(mode="RGBA", size=(int(w), int(h)), color=color)
+        if text is not None:
+            font = ImageFont.truetype('arial.ttf', 12)
+            draw = ImageDraw.Draw(img)
+            _, _, tw, th = draw.textbbox((0, 0), text, font=font)
+            draw .text(((w-tw)/2,(h-th)/2), text, fill="black", font=font)
+        return ImageTk.PhotoImage(img)
 
     @lru_cache(maxsize=32)
     def load_resized_landscape(self, path, w, max_h=None):
