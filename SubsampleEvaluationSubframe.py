@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+from tkinter.scrolledtext import ScrolledText
 from Application import Application
 from RoxasImageViewerFrame import RoxasImageViewerFrame
 import pandas as pd
@@ -23,10 +24,12 @@ class SubsampleEvaluationSubframe(Frame):
         self.curr_sample = self.parent.samples[self.curr_sample_i]
         self.curr_subsample = self.parent.state.get("curr_subsample")
 
-        self.eval_criteria_keys = ["X-dating", "Compression wood", "Orientation", "Artefacts", "Crack(s)", "Out of focus", "Frost ring?", "Decay", "Filled cells", "Compressed cells", "Overlapping cells", "Broken cells", "Tyloses", "Paraffin", "Others"]
+        self.eval_criteria_keys = self.controller.state.get("evaluation_criteria")
         self.eval_criteria_values = ["None", "EW", "LW", "All"]
         self.eval_criteria = {key: StringVar() for key in self.eval_criteria_keys}
         self.eval_criteria_count = len(list(self.eval_criteria.keys()))
+
+        self.get_all_evaluations = lambda: self.parent.state.get("evaluations")
 
         # General
         self.controller.title("Evaluate Subample")
@@ -94,11 +97,17 @@ class SubsampleEvaluationSubframe(Frame):
         
         ### Radio button grid
         for i, category in enumerate(self.eval_criteria):
+            bg = "Snow" if i%2 == 0 else "SystemButtonFace"
             Label(self.eval_frame, text=category, font=("Segoe UI", 9, "bold")).grid(row=i+1, column=0, sticky='w')
             for j, value in enumerate(self.eval_criteria_values):
-                rb = Radiobutton(self.eval_frame, text=value, variable=self.eval_criteria[category], value=value)
+                rb = Radiobutton(self.eval_frame, text=value, variable=self.eval_criteria[category], value=value, bg=bg)
                 rb.select() if j == 0 else rb.deselect() # Default value is first in values list
-                rb.grid(row=i+1, column=j+1, padx=8, pady=5, sticky='ew')
+                rb.grid(row=i+1, column=j+1, sticky='ew')
+
+        ## Comment
+        Label(self.eval_frame, text="Comment", font=("Segoe UI", 9, "bold")).grid(row=self.eval_criteria_count + 1, column=0, sticky='w')
+        self.ui_comment_box = Entry(self.eval_frame)
+        self.ui_comment_box.grid(row = self.eval_criteria_count + 1, column=1, columnspan=len(self.eval_criteria_values) + 1, sticky='ew')
 
         ## Current subsample evaluations table
         self.subsample_evals = None
@@ -126,10 +135,10 @@ class SubsampleEvaluationSubframe(Frame):
             self.table_view_toggle.grid_forget()
         else:        
             self.evals_table_headers_text.configure(text=headers)
-            self.evals_table_headers_text.grid(row=self.eval_criteria_count + 1, column=0, columnspan=len(self.eval_criteria_values) + 1)
+            self.evals_table_headers_text.grid(row=self.eval_criteria_count + 2, column=0, columnspan=len(self.eval_criteria_values) + 1)
             self.evals_table_rows_text.configure(text=rows)
-            self.evals_table_rows_text.grid(row=self.eval_criteria_count + 2, column=0, columnspan=len(self.eval_criteria_values) + 1)
-            self.table_view_toggle.grid(row=self.eval_criteria_count + 3, column=0, columnspan=len(self.eval_criteria_values) + 1)
+            self.evals_table_rows_text.grid(row=self.eval_criteria_count + 3, column=0, columnspan=len(self.eval_criteria_values) + 1)
+            self.table_view_toggle.grid(row=self.eval_criteria_count + 4, column=0, columnspan=len(self.eval_criteria_values) + 1)
 
     def on_click_crud_evaluation(self, save=True):
         year = self.eval_year_input.get()
@@ -138,19 +147,20 @@ class SubsampleEvaluationSubframe(Frame):
             return
         pk = (*self.curr_sample, self.curr_subsample.get("subsample"), year)
         if save:
-            self.parent.state.get("evaluations")[pk] = {category: "" if (v := value.get()) == "None" else v for category, value in self.eval_criteria.items()}
+            self.get_all_evaluations()[pk] = {category: "" if (v := value.get()) == "None" else v for category, value in self.eval_criteria.items()}
+            self.get_all_evaluations()[pk].update({"comment": self.ui_comment_box.get()})
         else:
-            self.parent.state.get("evaluations").pop(pk, None)
-        self.parent.state["is_unsaved"] = (True and bool(self.parent.state.get("evaluations")))
+            self.get_all_evaluations().pop(pk, None)
+        self.parent.state["is_unsaved"] = (True and bool(self.get_all_evaluations()))
         self.show_evaluations_table()
         self.focus_set()
-        print(self.parent.state)
 
     def get_subsample_evaluations_table(self):
         df = pd.DataFrame.from_dict(self.subsample_evals, orient='index').reset_index()
         if len(df) > 0:
             df = df.drop(df.columns[[0, 1, 2, 3]], axis = 1).rename(columns={df.columns[4]: "year"})
             if self.compact_table_view:
+                df = df.drop("comment", axis=1)
                 df = df.apply(lambda row: pd.Series(pd.concat([row.iloc[:1], pd.Series([row[row == value].index.tolist() for value in self.eval_criteria_values[1:]])])), axis=1)
                 df = df.rename(columns={df.columns[i]: name for i, name in enumerate(self.eval_criteria_values[1:], start = 1)})  
             return tuple(df.to_string(index=False).split("\n", 1))
@@ -158,7 +168,7 @@ class SubsampleEvaluationSubframe(Frame):
             return '', ''
 
     def get_subsample_evaluations(self):
-        return {key: val for key, val in self.parent.state.get("evaluations").items() if key[:-1] == (*self.curr_sample, self.curr_subsample.get("subsample"))}
+        return {key: val for key, val in self.get_all_evaluations().items() if key[:-1] == (*self.curr_sample, self.curr_subsample.get("subsample"))}
 
     def get_subsample_label_text(self):
         return "Site {} • Tree {} • Sample {} • Subsample {}".format(*self.curr_sample, self.curr_subsample.get('subsample'))

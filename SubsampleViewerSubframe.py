@@ -22,9 +22,14 @@ class SubsampleViewerSubframe(Frame):
         self.curr_sample = self.parent.samples[self.curr_sample_i]
 
         self.get_annotated_twin_subsamples = lambda: self.metadata_by_sample[self.curr_sample]['subsamples_annotated_twin']
+        self.get_annotated_subsamples = lambda: self.metadata_by_sample[self.curr_sample]['subsamples_annotated']
         self.get_default_subsamples = lambda: self.metadata_by_sample[self.curr_sample]['subsamples_default']
 
-        self.subsample_ids = sorted(list(set(self.get_annotated_twin_subsamples().keys()).union(set(self.get_default_subsamples().keys()))))
+        self.subsample_ids = sorted(list(
+            set(self.get_annotated_twin_subsamples().keys())
+            .union(set(self.get_annotated_subsamples().keys())
+            .union(set(self.get_default_subsamples().keys())))
+        ))
         self.curr_subsample_index = None # Tracked
         self.prev_subsample, self.curr_subsample, self.next_subsample = None, None, None # Curr is Tracked
 
@@ -113,6 +118,11 @@ class SubsampleViewerSubframe(Frame):
             "curr_subsample_index": self.curr_subsample_index,
             "curr_subsample": self.curr_subsample,
         })
+    
+    def get_subsample_by_priority(self, subsample_id):
+        return self.get_annotated_twin_subsamples().get(subsample_id) \
+            or self.get_annotated_subsamples().get(subsample_id) \
+            or self.get_default_subsamples().get(subsample_id)
 
     def get_prev_curr_next_subsample(self):
         if self.curr_subsample_index is None:
@@ -121,9 +131,9 @@ class SubsampleViewerSubframe(Frame):
         prev_subsample_id = self.subsample_ids[i] if (i := self.curr_subsample_index - 1) in range(len(self.subsample_ids)) else None
         next_subsample_id = self.subsample_ids[i] if (i := self.curr_subsample_index + 1) in range(len(self.subsample_ids)) else None
         
-        curr_subsample = self.get_annotated_twin_subsamples().get(curr_subsample_id) or self.get_default_subsamples().get(curr_subsample_id)
-        prev_subsample = self.get_annotated_twin_subsamples().get(prev_subsample_id) or self.get_default_subsamples().get(prev_subsample_id)
-        next_subsample = self.get_annotated_twin_subsamples().get(next_subsample_id) or self.get_default_subsamples().get(next_subsample_id)
+        curr_subsample = self.get_subsample_by_priority(curr_subsample_id)
+        prev_subsample = self.get_subsample_by_priority(prev_subsample_id)
+        next_subsample = self.get_subsample_by_priority(next_subsample_id)
         
         return prev_subsample, curr_subsample, next_subsample
 

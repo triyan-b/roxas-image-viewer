@@ -1,7 +1,7 @@
 
 from tkinter import *
-import json
 import sys
+import yaml
 
 class Application(Tk):
     def __init__(self):
@@ -17,6 +17,7 @@ class Application(Tk):
         app_settings = self.load_app_settings()
         self.state['accepted_image_formats'] = app_settings.get('ACCEPTED_IMAGE_FORMATS', ["jpg", "jpeg", "png"])
         self.state['csv_delimiter'] = app_settings.get('CSV_DELIMITER', ",")
+        self.state['evaluation_criteria'] = app_settings.get('EVALUATION_CRITERIA', [])
 
         # Default geometry        
         self.grid()
@@ -33,8 +34,8 @@ class Application(Tk):
 
     def load_app_settings(self) -> dict:
         try:
-            with open('./settings.json') as f:
-                settings = json.load(f)
+            with open('./settings.yaml') as f:
+                settings = yaml.safe_load(f)
             # print(settings)
             return settings
         except Exception as e:

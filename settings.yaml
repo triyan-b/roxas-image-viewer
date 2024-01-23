@@ -1,0 +1,29 @@
+---
+ACCEPTED_IMAGE_FORMATS: # List of accepted file formats
+  - jpg
+  - jpeg
+  - png
+
+CSV_DELIMITER: ";" # Single character used as a column separator for exported CSV files
+
+EVALUATION_CRITERIA: # List of criteria to evaluate subsamples against
+  - Exclude
+  - X-dating
+  - Compression wood
+  - Orientation
+  - Artefacts
+  - Cracks
+  - Out of focus
+  - Frost ring
+  - Blue ring
+  - Incomplete ring
+  - Light ring
+  - IADF
+  - Decay
+  - Filled cells
+  - Compressed cells
+  - Overlapping cells
+  - Broken cells
+  - Tyloses
+  - Paraffin
+  - Others

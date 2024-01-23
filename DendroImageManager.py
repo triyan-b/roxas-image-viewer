@@ -29,7 +29,7 @@ class DendroImageManager():
                na_position = "first")
         df_by_sample = df.groupby(['site', 'tree', 'sample'])
         
-        # Extract relevant records (sample preview, annotated twin subsamples and default subsamples as backup)
+        # Extract relevant records (sample preview, annotated twin subsamples, annotated subsamples and default subsamples as backup)
         metadata_by_sample = {}
         for sample, group_data in df_by_sample:
             group_data = group_data.drop_duplicates()
@@ -38,6 +38,7 @@ class DendroImageManager():
             }
             sample_preview = group_data[(group_data.extras == 'PREVIEW') & (group_data.subsample < 0)]
             subsamples_annotated_twin = group_data[(group_data.extras == 'ANNOTATED_TWIN') & (group_data.subsample >= 0)]
+            subsamples_annotated = group_data[(group_data.extras == 'ANNOTATED') & (group_data.subsample >= 0)]
             subsamples_default = group_data[(group_data.extras.isnull()) & (group_data.subsample >= 0)]
             if len(sample_preview) > 0:
                 metadata_by_sample[sample].update({
@@ -45,6 +46,7 @@ class DendroImageManager():
                 })
             metadata_by_sample[sample].update({
                 "subsamples_annotated_twin": {rec['subsample']: rec for rec in subsamples_annotated_twin.to_dict(orient='records')},
+                "subsamples_annotated": {rec['subsample']: rec for rec in subsamples_annotated.to_dict(orient='records')},
                 "subsamples_default": {rec['subsample']: rec for rec in subsamples_default.to_dict(orient='records')}
             })
         # metadata_by_sample = {sample: group_data.drop_duplicates().to_dict(orient='records') for sample, group_data in df_by_sample}

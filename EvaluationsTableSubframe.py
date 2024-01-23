@@ -87,6 +87,7 @@ class EvaluationsTableSubframe(Frame):
                 df.columns[4]: "year"
             })
             if self.compact_table_view:
+                df = df.drop("comment", axis=1)
                 df = df.apply(lambda row: pd.Series(pd.concat([row.iloc[:5], pd.Series([row[row == value].index.tolist() for value in ["EW", "LW", "All"]])])), axis=1)
                 df = df.rename(columns={df.columns[i]: name for i, name in enumerate(["EW", "LW", "All"], start = 5)}) 
             
