@@ -1,6 +1,5 @@
 from tkinter import *
 from tkinter import messagebox
-from tkinter.scrolledtext import ScrolledText
 from Application import Application
 from RoxasImageViewerFrame import RoxasImageViewerFrame
 import pandas as pd

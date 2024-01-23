@@ -17,8 +17,8 @@ class SetupFrame(Frame):
         if not self.controller.state.get("prod"):
             self.sample_preview_dir = "N:/dendro/Dendrosciences_All/PatrickFonti_CALDERA_2019_PF/Box1-30/Box01/0_JPG"
             self.subsample_dir = "N:/dendro/Dendrosciences_All/PatrickFonti_CALDERA_2019_PF/Box1-30/Box01/ROXAS/4_Roxas_final"
-            # self.sample_preview_dir = "C:/Users/bhardwaj/Desktop/Triyan/git/roxas-image-viewer/images"
-            # self.subsample_dir = "C:/Users/bhardwaj/Desktop/Triyan/git/roxas-image-viewer/images"
+            self.sample_preview_dir = "C:/Users/bhardwaj/Desktop/Triyan/git/roxas-image-viewer/images"
+            self.subsample_dir = "C:/Users/bhardwaj/Desktop/Triyan/git/roxas-image-viewer/images"
             pass
 
         # General

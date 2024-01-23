@@ -8,22 +8,26 @@ CSV_DELIMITER: ";" # Single character used as a column separator for exported CS
 
 EVALUATION_CRITERIA: # List of criteria to evaluate subsamples against
   - Exclude
+  # group of processing issues
   - X-dating
-  - Compression wood
   - Orientation
-  - Artefacts
-  - Cracks
   - Out of focus
-  - Frost ring
-  - Blue ring
-  - Incomplete ring
-  - Light ring
-  - IADF
-  - Decay
+  - Paraffin
   - Filled cells
   - Compressed cells
   - Overlapping cells
   - Broken cells
+  - Incomplete ring
+  # group of wood problems
+  - Cracks
   - Tyloses
-  - Paraffin
-  - Others
+  - Compression wood
+  - Decay
+  # group special features
+  - Frost ring
+  - Blue ring
+  - Light ring
+  - IADF
+  - Traumatic resin ducts
+  - Other artefacts
+

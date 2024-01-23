@@ -157,7 +157,7 @@ class SampleViewerSubframe(Frame):
     def on_click_export_evaluations(self):
         df = pd.DataFrame.from_dict(self.parent.state.get("evaluations"), orient='index').reset_index()
         if len(df) > 0:
-            if not (path := filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV","*.csv")], initialfile="Untitled.csv")):
+            if not (path := filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV","*.csv")], initialfile="XXX_feature.csv")):
                 return True
             df = df.rename(columns={
                 df.columns[0]: "Site",
