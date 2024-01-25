@@ -23,15 +23,15 @@ Dependencies: Windows, Python 3, tkinter, pandas, pyyaml
     ```
 
 
-2. Clone or download and unzip this repository
+3. Clone or download and unzip this repository
 
 ```
 git clone git@github.com:triyan-b/roxas-image-viewer.git
 ```
 
-3. Double click `Roxas Image Viewer.bat` to run the app
+4. Double click `Roxas Image Viewer.bat` to run the app
 
-4. [Optional]: Create a shortcut to `Roxas Image Viewer.bat` and place it where you please. You can also set its icon ([.ico file](icon.ico) is provided)
+5. [Optional]: Create a shortcut to `Roxas Image Viewer.bat` and place it where you please. You can also set its icon ([.ico file](icon.ico) is provided)
 
 ### Configuration
 
