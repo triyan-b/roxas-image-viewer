@@ -17,7 +17,7 @@ Dependencies: Windows, Python 3, tkinter, pandas, pyyaml
     ```
     python --version
     ```
-    c: Install dependencies:
+    c. Install dependencies:
     ```
     conda install pandas pyyaml
     ```
