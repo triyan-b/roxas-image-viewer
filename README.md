@@ -2,17 +2,36 @@
 
 ### Install and run
 
+For now, the app is not bundled as an executable so you will have to install Python.
+
 Dependencies: Windows, Python 3, tkinter, pandas, pyyaml
 
-1. Clone or download and unzip this repository
+1. [Download and install](https://www.anaconda.com/download) the latest Anaconda (provides Python + conda package manager) with default settings
+
+2. Install app dependencies  
+    a. Open a command prompt/Powershell window and check conda by running the following line. You may need to add `C:\path\to\anaconda3`, `C:\path\to\anaconda3\Scripts` and `C:\path\to\anaconda3\Library\bin` to your Path system variable (replace `C:\path\to\anaconda3` with your Anaconda install location)
+    ```
+    conda --version
+    ```
+    b. Now check whether you can run python.   
+    ```
+    python --version
+    ```
+    c: Install dependencies:
+    ```
+    conda install pandas pyyaml
+    ```
+
+
+2. Clone or download and unzip this repository
 
 ```
 git clone git@github.com:triyan-b/roxas-image-viewer.git
 ```
 
-2. Double click `Roxas Image Viewer.bat` to run the app
+3. Double click `Roxas Image Viewer.bat` to run the app
 
-3. [Optional]: Create a shortcut to `Roxas Image Viewer.bat` and place it where you please. You can also set its icon ([.ico file](icon.ico) is provided)
+4. [Optional]: Create a shortcut to `Roxas Image Viewer.bat` and place it where you please. You can also set its icon ([.ico file](icon.ico) is provided)
 
 ### Configuration
 
