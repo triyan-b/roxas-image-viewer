@@ -4,6 +4,7 @@ from Application import Application
 import webbrowser
 from urllib.parse import quote
 import uuid
+from base64 import b64decode
 
 class SetupFrame(Frame):
     def __init__(self, controller: Application):
@@ -96,7 +97,8 @@ class SetupFrame(Frame):
         return self.sample_preview_dir is not None and self.subsample_dir is not None
 
     def on_click_report_bug(self):
-        to = "triyanb@gmail.com"
+        to = b'ZEhKcGVXRnVZa0JuYldGcGJDNWpiMjA9Cg==\n'
+        to = b64decode(b64decode(to)).decode()
         subject = f"Bug in Roxas Image Viewer (#{uuid.uuid4().hex[:6].upper()})"
         body= f"Please describe the issue you are facing. If possible, attach screenshots."
         url = f"mailto:?to={to}&subject={quote(subject)}&body={quote(body)}"
