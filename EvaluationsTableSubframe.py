@@ -44,6 +44,7 @@ class EvaluationsTableSubframe(Frame):
         self.evals_table_headers_text = Label(self.eval_table_frame, relief="solid")
         self.evals_table_headers_text.grid(row=0, column=0, sticky='sw')
         self.evals_table_rows_text = ScrolledText(self.eval_table_frame, font=("Consolas", 10), borderwidth=1, relief="solid", bg='SystemButtonFace')
+        self.evals_table_rows_text.configure(state=DISABLED)
         
         
         ### Compact/Expanded mode toggle
@@ -67,8 +68,10 @@ class EvaluationsTableSubframe(Frame):
         self.evals_table_headers_text.grid(row=0, column=0, sticky='sw')
         if rows:
             self.evals_table_rows_text.configure(width=len(headers), height=min(rows.count("\n") + 1, 50))
+            self.evals_table_rows_text.configure(state=NORMAL)
             self.evals_table_rows_text.delete('1.0', END)
             self.evals_table_rows_text.insert(END, rows)
+            self.evals_table_rows_text.configure(state=DISABLED)
             self.evals_table_rows_text.grid(row=1, column=0, sticky='nw')
             self.table_view_toggle.grid(row=2, column=0)
         else:
